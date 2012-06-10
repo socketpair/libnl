@@ -426,7 +426,7 @@ class ObjIterator(object):
 
         # reference used inside object
         capi.nl_object_get(ret)
-        return self._cache._new_object(ret)
+        return self._cache.object_type(ret)
 
 
 class ReverseObjIterator(ObjIterator):
@@ -435,9 +435,15 @@ class ReverseObjIterator(ObjIterator):
 
 class Cache(object):
     """Collection of netlink objects"""
+
+    _cache_name = None # undefined, should be defined in subclasses
+    _protocol = None # undefined, should be defined in subclasses
+    object_type = None # undefined, should be the type of cached objects
+
     def __init__(self):
         if self.__class__ is Cache:
             raise NotImplementedError()
+        self._nl_cache = self._alloc_cache_name(self._cache_name)
         self.arg1 = None
         self.arg2 = None
 
@@ -467,12 +473,6 @@ class Cache(object):
     @staticmethod
     def _alloc_cache_name(name):
         return capi.alloc_cache_name(name)
-
-    # implemented by sub classes, must return new instasnce of cacheable
-    # object
-    @staticmethod
-    def _new_object(obj):
-        raise NotImplementedError()
 
     # implemented by sub classes, must return instance of sub class
     def _new_cache(self, cache):

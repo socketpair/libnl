@@ -112,13 +112,13 @@ ICMP6_OUTERRORS = 56
 class LinkCache(netlink.Cache):
     """Cache of network links"""
 
-    def __init__(self, family=socket.AF_UNSPEC, cache=None):
-        if not cache:
-            cache = self._alloc_cache_name('route/link')
+    object_type = Link
+    _cache_name = 'route/link'
+    _protocol = netlink.NETLINK_ROUTE
 
+    def __init__(self, family=socket.AF_UNSPEC):
+        super(LinkCache, self).__init__()
         self._info_module = None
-        self._protocol = netlink.NETLINK_ROUTE
-        self._nl_cache = cache
         self._set_arg1(family)
 
     def __getitem__(self, key):
@@ -131,10 +131,6 @@ class LinkCache(netlink.Cache):
             raise KeyError()
         else:
             return Link.from_capi(link)
-
-    @staticmethod
-    def _new_object(obj):
-        return Link(obj)
 
     def _new_cache(self, cache):
         return LinkCache(family=self.arg1, cache=cache)

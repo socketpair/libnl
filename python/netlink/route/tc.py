@@ -230,12 +230,9 @@ class Tc(netlink.Object):
 class QdiscCache(netlink.Cache):
     """Cache of qdiscs"""
 
-    def __init__(self, cache=None):
-        if not cache:
-            cache = self._alloc_cache_name('route/qdisc')
-
-        self._protocol = netlink.NETLINK_ROUTE
-        self._nl_cache = cache
+    _protocol = netlink.NETLINK_ROUTE
+    _cache_name = 'route/qdisc'
+    object_type= Qdisc
 
 #	def __getitem__(self, key):
 #        	if type(key) is int:
@@ -247,10 +244,6 @@ class QdiscCache(netlink.Cache):
 #                        raise KeyError()
 #		else:
 #                        return Qdisc._from_capi(capi.qdisc2obj(qdisc))
-
-    @staticmethod
-    def _new_object(obj):
-        return Qdisc(obj)
 
     @staticmethod
     def _new_cache(cache):
@@ -393,17 +386,13 @@ class Qdisc(Tc):
 class TcClassCache(netlink.Cache):
     """Cache of traffic classes"""
 
+    object_type = TcClass
+    _cache_name = 'route/class'
+    _protocol = netlink.NETLINK_ROUTE
+
     def __init__(self, ifindex, cache=None):
-        if not cache:
-            cache = self._alloc_cache_name('route/class')
-
-        self._protocol = netlink.NETLINK_ROUTE
-        self._nl_cache = cache
+        super(TcClassCache, self).__init__()
         self._set_arg1(ifindex)
-
-    @staticmethod
-    def _new_object(obj):
-        return TcClass(obj)
 
     def _new_cache(self, cache):
         return TcClassCache(self.arg1, cache=cache)
@@ -461,19 +450,14 @@ class TcClass(Tc):
 
 class ClassifierCache(netlink.Cache):
     """Cache of traffic classifiers objects"""
+    _protocol = netlink.NETLINK_ROUTE
+    _cache_name = 'route/cls'
+    object_type = Classifier
 
     def __init__(self, ifindex, parent, cache=None):
-        if not cache:
-            cache = self._alloc_cache_name('route/cls')
-
-        self._protocol = netlink.NETLINK_ROUTE
-        self._nl_cache = cache
-        self._set_arg1(ifindex)
+        super(ClassifierCache, self).__init__()
+        self._set_arg1(int(ifindex))
         self._set_arg2(int(parent))
-
-    @staticmethod
-    def _new_object(obj):
-        return Classifier(obj)
 
     def _new_cache(self, cache):
         return ClassifierCache(self.arg1, self.arg2, cache=cache)

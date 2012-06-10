@@ -22,12 +22,9 @@ from .. import util as util
 class AddressCache(netlink.Cache):
     """Cache containing network addresses"""
 
-    def __init__(self, cache=None):
-        if not cache:
-            cache = self._alloc_cache_name('route/addr')
-
-        self._protocol = netlink.NETLINK_ROUTE
-        self._nl_cache = cache
+    _cache_name = 'route/addr'
+    _protocol = netlink.NETLINK_ROUTE
+    object_type = Address
 
     def __getitem__(self, key):
         # Using ifindex=0 here implies that the local address itself
@@ -44,10 +41,6 @@ class AddressCache(netlink.Cache):
             raise KeyError()
 
         return Address._from_capi(addr)
-
-    @staticmethod
-    def _new_object(obj):
-        return Address(obj)
 
     @staticmethod
     def _new_cache(cache):
