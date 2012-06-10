@@ -227,27 +227,6 @@ class Tc(netlink.Object):
     def stats(fmt):
         return fmt.nl('{t|packets} {t|bytes} {t|qlen}')
 
-class QdiscCache(netlink.Cache):
-    """Cache of qdiscs"""
-
-    _protocol = netlink.NETLINK_ROUTE
-    _cache_name = 'route/qdisc'
-    object_type= Qdisc
-
-#	def __getitem__(self, key):
-#        	if type(key) is int:
-#                        link = capi.rtnl_link_get(self._this, key)
-#                elif type(key) is str:
-#                        link = capi.rtnl_link_get_by_name(self._this, key)
-#
-#		if qdisc is None:
-#                        raise KeyError()
-#		else:
-#                        return Qdisc._from_capi(capi.qdisc2obj(qdisc))
-
-    @staticmethod
-    def _new_cache(cache):
-        return QdiscCache(cache=cache)
 
 class Qdisc(Tc):
     """Queueing discipline"""
@@ -383,19 +362,28 @@ class Qdisc(Tc):
 
         return buf
 
-class TcClassCache(netlink.Cache):
-    """Cache of traffic classes"""
+class QdiscCache(netlink.Cache):
+    """Cache of qdiscs"""
 
-    object_type = TcClass
-    _cache_name = 'route/class'
     _protocol = netlink.NETLINK_ROUTE
+    _cache_name = 'route/qdisc'
+    object_type= Qdisc
 
-    def __init__(self, ifindex, cache=None):
-        super(TcClassCache, self).__init__()
-        self._set_arg1(ifindex)
+#	def __getitem__(self, key):
+#        	if type(key) is int:
+#                        link = capi.rtnl_link_get(self._this, key)
+#                elif type(key) is str:
+#                        link = capi.rtnl_link_get_by_name(self._this, key)
+#
+#		if qdisc is None:
+#                        raise KeyError()
+#		else:
+#                        return Qdisc._from_capi(capi.qdisc2obj(qdisc))
 
-    def _new_cache(self, cache):
-        return TcClassCache(self.arg1, cache=cache)
+    @staticmethod
+    def _new_cache(cache):
+        return QdiscCache(cache=cache)
+
 
 class TcClass(Tc):
     """Traffic Class"""
@@ -448,19 +436,20 @@ class TcClass(Tc):
 
         return buf
 
-class ClassifierCache(netlink.Cache):
-    """Cache of traffic classifiers objects"""
-    _protocol = netlink.NETLINK_ROUTE
-    _cache_name = 'route/cls'
-    object_type = Classifier
+class TcClassCache(netlink.Cache):
+    """Cache of traffic classes"""
 
-    def __init__(self, ifindex, parent, cache=None):
-        super(ClassifierCache, self).__init__()
-        self._set_arg1(int(ifindex))
-        self._set_arg2(int(parent))
+    object_type = TcClass
+    _cache_name = 'route/class'
+    _protocol = netlink.NETLINK_ROUTE
+
+    def __init__(self, ifindex, cache=None):
+        super(TcClassCache, self).__init__()
+        self._set_arg1(ifindex)
 
     def _new_cache(self, cache):
-        return ClassifierCache(self.arg1, self.arg2, cache=cache)
+        return TcClassCache(self.arg1, cache=cache)
+
 
 class Classifier(Tc):
     """Classifier"""
@@ -518,6 +507,21 @@ class Classifier(Tc):
             buf += fmt.nl('\t' + self.details())
 
         return buf
+
+class ClassifierCache(netlink.Cache):
+    """Cache of traffic classifiers objects"""
+    _protocol = netlink.NETLINK_ROUTE
+    _cache_name = 'route/cls'
+    object_type = Classifier
+
+    def __init__(self, ifindex, parent, cache=None):
+        super(ClassifierCache, self).__init__()
+        self._set_arg1(int(ifindex))
+        self._set_arg2(int(parent))
+
+    def _new_cache(self, cache):
+        return ClassifierCache(self.arg1, self.arg2, cache=cache)
+
 
 _qdisc_cache = QdiscCache()
 

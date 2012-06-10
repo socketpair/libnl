@@ -109,32 +109,6 @@ ICMP6_INERRORS = 54
 ICMP6_OUTMSGS = 55
 ICMP6_OUTERRORS = 56
 
-class LinkCache(netlink.Cache):
-    """Cache of network links"""
-
-    object_type = Link
-    _cache_name = 'route/link'
-    _protocol = netlink.NETLINK_ROUTE
-
-    def __init__(self, family=socket.AF_UNSPEC):
-        super(LinkCache, self).__init__()
-        self._info_module = None
-        self._set_arg1(family)
-
-    def __getitem__(self, key):
-        if type(key) is int:
-            link = capi.rtnl_link_get(self._nl_cache, key)
-        else:
-            link = capi.rtnl_link_get_by_name(self._nl_cache, key)
-
-        if link is None:
-            raise KeyError()
-        else:
-            return Link.from_capi(link)
-
-    def _new_cache(self, cache):
-        return LinkCache(family=self.arg1, cache=cache)
-
 class Link(netlink.Object):
     """Network link"""
 
@@ -504,6 +478,33 @@ class Link(netlink.Object):
             buf += self._foreach_af('stats')
 
         return buf
+
+class LinkCache(netlink.Cache):
+    """Cache of network links"""
+
+    object_type = Link
+    _cache_name = 'route/link'
+    _protocol = netlink.NETLINK_ROUTE
+
+    def __init__(self, family=socket.AF_UNSPEC):
+        super(LinkCache, self).__init__()
+        self._info_module = None
+        self._set_arg1(family)
+
+    def __getitem__(self, key):
+        if type(key) is int:
+            link = capi.rtnl_link_get(self._nl_cache, key)
+        else:
+            link = capi.rtnl_link_get_by_name(self._nl_cache, key)
+
+        if link is None:
+            raise KeyError()
+        else:
+            return Link.from_capi(link)
+
+    def _new_cache(self, cache):
+        return LinkCache(family=self.arg1, cache=cache)
+
 
 def get(name, sock=None):
     """Lookup Link object directly from kernel"""

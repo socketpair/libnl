@@ -19,32 +19,6 @@ from .  import capi as capi
 from .  import link as Link
 from .. import util as util
 
-class AddressCache(netlink.Cache):
-    """Cache containing network addresses"""
-
-    _cache_name = 'route/addr'
-    _protocol = netlink.NETLINK_ROUTE
-    object_type = Address
-
-    def __getitem__(self, key):
-        # Using ifindex=0 here implies that the local address itself
-        # is unique, otherwise the first occurence is returned.
-        return self.lookup(0, key)
-
-    def lookup(self, ifindex, local):
-        if type(local) is str:
-            local = netlink.AbstractAddress(local)
-
-        addr = capi.rtnl_addr_get(self._nl_cache, ifindex,
-                      local._nl_addr)
-        if addr is None:
-            raise KeyError()
-
-        return Address._from_capi(addr)
-
-    @staticmethod
-    def _new_cache(cache):
-        return AddressCache(cache=cache)
 
 class Address(netlink.Object):
     """Network address"""
@@ -358,3 +332,30 @@ class Address(netlink.Object):
                    ' {s|last-updated!k} {a|last_update}')
 
         return buf
+
+class AddressCache(netlink.Cache):
+    """Cache containing network addresses"""
+
+    _cache_name = 'route/addr'
+    _protocol = netlink.NETLINK_ROUTE
+    object_type = Address
+
+    def __getitem__(self, key):
+        # Using ifindex=0 here implies that the local address itself
+        # is unique, otherwise the first occurence is returned.
+        return self.lookup(0, key)
+
+    def lookup(self, ifindex, local):
+        if type(local) is str:
+            local = netlink.AbstractAddress(local)
+
+        addr = capi.rtnl_addr_get(self._nl_cache, ifindex,
+                      local._nl_addr)
+        if addr is None:
+            raise KeyError()
+
+        return Address._from_capi(addr)
+
+    @staticmethod
+    def _new_cache(cache):
+        return AddressCache(cache=cache)
