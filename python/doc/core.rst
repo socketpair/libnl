@@ -28,15 +28,6 @@ Object
       Call the libnl internal dump mechanism to dump the object
       according to the parameters specified.
 
-   .. py:method:: apply(attr, val)
-
-      Applies a attribute=value pair and modifies the object accordingly.
-      Example::
-	obj.apply("mtu", 1200)      # Sets attribute mtu to 1200 (link obj)
-
-      :raises: KeyError if attribute is unknown
-      :raises: ImmutableError if attribute is not mutable
-
    .. py:attribute:: mark
 
       True if the object is marked, otherwise False.
