@@ -132,7 +132,7 @@ extern long nl_prob2int(const char *);
 extern int nl_get_user_hz(void);
 extern uint32_t nl_us2ticks(uint32_t);
 extern uint32_t nl_ticks2us(uint32_t);
-extern int nl_str2msec(const char *, uint64_t *);
+extern int nl_str2msec(const char *, uint64_t *OUTPUT);
 
 %cstring_output_maxsize(char *buf, size_t len)
 extern char *nl_msec2str(uint64_t, char *buf, size_t len);
@@ -226,10 +226,12 @@ extern struct sockaddr_nl *nlmsg_get_dst(struct nl_msg *);
 extern void		  nlmsg_set_creds(struct nl_msg *, struct ucred *);
 extern struct ucred *	  nlmsg_get_creds(struct nl_msg *);
 
-extern char *		  nl_nlmsgtype2str(int, char *, size_t);
+%cstring_output_maxsize(char *buf, size_t len)
+extern char *		  nl_nlmsgtype2str(int, char *buf, size_t len);
 extern int		  nl_str2nlmsgtype(const char *);
 
-extern char *		  nl_nlmsg_flags2str(int, char *, size_t);
+%cstring_output_maxsize(char *buf, size_t len)
+extern char *		  nl_nlmsg_flags2str(int, char *buf, size_t len);
 
 extern int		  nl_msg_parse(struct nl_msg *,
 				       void (*cb)(struct nl_object *, void *),
@@ -259,6 +261,7 @@ extern void nl_object_free(struct nl_object *);
 extern struct nl_object *nl_object_clone(struct nl_object *);
 extern void nl_object_get(struct nl_object *);
 extern void nl_object_put(struct nl_object *);
+%typemap (out) int nl_object_shared = bool;
 extern int nl_object_shared(struct nl_object *);
 
 %cstring_output_maxsize(char *buf, size_t len)

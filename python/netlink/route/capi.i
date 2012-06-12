@@ -73,7 +73,8 @@ extern int rtnl_link_build_delete_request(const struct rtnl_link *, struct nl_ms
 extern int rtnl_link_delete(struct nl_sock *, const struct rtnl_link *);
 extern int rtnl_link_build_get_request(int, const char *, struct nl_msg **);
 
-extern char *rtnl_link_stat2str(int, char *, size_t);
+%cstring_output_maxsize(char *buf, size_t len)
+extern char *rtnl_link_stat2str(int, char *buf, size_t len);
 extern int rtnl_link_str2stat(const char *);
 
 %cstring_output_maxsize(char *buf, size_t len)
