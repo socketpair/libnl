@@ -335,33 +335,21 @@ class Link(netlink.Object):
 
         return capi.rtnl_link_get_stat(self._rtnl_link, stat)
 
-    def add(self, sock=None, flags=None):
-        if not sock:
-            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-
-        if not flags:
-            flags = netlink.NLM_F_CREATE
-
+    def add(self, sock=None, flags=netlink.NLM_F_CREATE):
         ret = capi.rtnl_link_add(sock._sock, self._rtnl_link, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    def change(self, sock=None, flags=0):
+    def change(self, sock, flags=0):
         """Commit changes made to the link object"""
-        if sock is None:
-            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-
         if not self._orig:
             raise netlink.NetlinkError('Original link not available')
         ret = capi.rtnl_link_change(sock._sock, self._orig, self._rtnl_link, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    def delete(self, sock=None):
+    def delete(self, sock):
         """Attempt to delete this link in the kernel"""
-        if sock is None:
-            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-
         ret = capi.rtnl_link_delete(sock._sock, self._rtnl_link)
         if ret < 0:
             raise netlink.KernelError(ret)
@@ -506,15 +494,9 @@ class LinkCache(netlink.Cache):
         return LinkCache(family=self.arg1, cache=cache)
 
 
-def get(name, sock=None):
+def get(name, sock):
     """Lookup Link object directly from kernel"""
-    if not name:
-        raise ValueError()
-
-    if not sock:
-        sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-
-    link = capi.get_from_kernel(sock._sock, 0, name)
+    link = capi.get_from_kernel(sock._sock, 0, bytes(name))
     if not link:
         return None
 

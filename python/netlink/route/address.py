@@ -274,20 +274,14 @@ class Address(netlink.Object):
         hsec = capi.rtnl_addr_get_last_update_time(self._rtnl_addr)
         return datetime.timedelta(milliseconds=10*hsec)
 
-    def add(self, socket=None, flags=None):
-        if not socket:
-            socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-
-        if not flags:
-            flags = netlink.NLM_F_CREATE
-
-        ret = capi.rtnl_addr_add(socket._sock, self._rtnl_addr, flags)
+    def add(self, sock, flags=netlink.NLM_F_CREATE):
+        ret = capi.rtnl_addr_add(sock._sock, self._rtnl_addr, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    def delete(self, socket, flags=0):
+    def delete(self, sock, flags=0):
         """Attempt to delete this address in the kernel"""
-        ret = capi.rtnl_addr_delete(socket._sock, self._rtnl_addr, flags)
+        ret = capi.rtnl_addr_delete(sock._sock, self._rtnl_addr, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
