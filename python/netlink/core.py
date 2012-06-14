@@ -212,18 +212,6 @@ class Socket(object):
         else:
             return ret
 
-_sockets = {}
-
-def lookup_socket(protocol):
-    try:
-        sock = _sockets[protocol]
-    except KeyError:
-        sock = Socket()
-        sock.connect(protocol)
-        _sockets[protocol] = sock
-
-    return sock
-
 class DumpParams(object):
     """Dumping parameters"""
 
@@ -514,20 +502,13 @@ class Cache(object):
         self.arg2 = arg
         capi.nl_cache_set_arg2(self._nl_cache, arg)
 
-    def refill(self, socket=None):
+    def refill(self, sock):
         """Clear cache and refill it"""
-        if socket is None:
-            socket = lookup_socket(self._protocol)
+        capi.nl_cache_refill(sock._sock, self._nl_cache)
 
-        capi.nl_cache_refill(socket._sock, self._nl_cache)
-        return self
-
-    def resync(self, socket=None, cb=None):
+    def resync(self, sock, cb=None):
         """Synchronize cache with content in kernel"""
-        if socket is None:
-            socket = lookup_socket(self._protocol)
-
-        capi.nl_cache_resync(socket._sock, self._nl_cache, cb)
+        capi.nl_cache_resync(sock._sock, self._nl_cache, cb)
 
     def provide(self):
         """Provide this cache to others
