@@ -31,11 +31,6 @@ libnl_nf_3_la_SOURCES = \
 	netfilter/netfilter.c netfilter/nfnl.c netfilter/queue.c \
 	netfilter/queue_msg.c netfilter/queue_msg_obj.c netfilter/queue_obj.c
 
-CLEANFILES = \
-	route/pktloc_grammar.c route/pktloc_grammar.h \
-	route/pktloc_syntax.c route/pktloc_syntax.h \
-	route/cls/ematch_grammar.c route/cls/ematch_grammar.h \
-	route/cls/ematch_syntax.c route/cls/ematch_syntax.h
 
 # Hack to avoid using ylwrap. It does not function correctly in combination
 # with --header-file=
@@ -90,6 +85,14 @@ BUILT_SOURCES = \
 	route/cls/ematch_syntax.c \
 	route/pktloc_grammar.c \
 	route/pktloc_syntax.c
+
+built_headers = \
+	route/pktloc_grammar.h \
+	route/pktloc_syntax.h \
+	route/cls/ematch_grammar.h \
+	route/cls/ematch_syntax.h
+
+CLEANFILES = $(BUILT_SOURCES) $(built_headers)
 
 EXTRA_DIST = \
 	route/pktloc_grammar.l \
