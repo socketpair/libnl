@@ -118,3 +118,14 @@ cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
 cli_cls_basic_la_LDFLAGS = -module -avoid-version
 cli_cls_cgroup_la_LDFLAGS = -module -avoid-version
 endif
+
+indent_sources =
+indent_sources += $(libnl_3_la_SOURCES)
+indent_sources += $(libnl_genl_3_la_SOURCES)
+indent_sources += $(libnl_nf_3_la_SOURCES)
+indent_sources += $(libnl_route_3_la_SOURCES)
+indent_sources += $(nodist_libnl_route_3_la_SOURCES)
+#TODO: all headers. HOW?
+
+indent: $(indent_sources)
+	INDENT_PROFILE=indent.pro indent $(indent_sources)
