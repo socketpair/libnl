@@ -98,23 +98,23 @@ class MyFormatter(Formatter):
 
     def get_value(self, key, args, kwds):
         # Let default get_value() handle ints
-        if not isinstance(key, str):
-            return Formatter.get_value(self, key, args, kwds)
+        if not isinstance(key, basestring):
+            return super(MyFormatter, self).get_value(key, args, kwds)
 
         # HACK, we allow defining strings via fields to allow
         # conversions
-        if key[:2] == 's|':
+        if key.startswith('s|'):
             return key[2:]
 
-        if key[:2] == 't|':
+        if key.startswith('t|'):
             # title mode ("TITLE ATTR")
             include_title = True
-        elif key[:2] == 'a|':
+        elif key.startswith('a|'):
             # plain attribute mode ("ATTR")
             include_title = False
         else:
             # No special field, have default get_value() get it
-            return Formatter.get_value(self, key, args, kwds)
+            return super(MyFormatter, self).get_value(key, args, kwds)
 
         key = key[2:]
         (title_, value) = self._nlattr(key)
@@ -136,23 +136,23 @@ class MyFormatter(Formatter):
         elif conversion == 'b':
             return bold(value)
         elif conversion is None:
-            return value
+            return str(value)
 
         raise ValueError('Unknown converion specifier {0!s}'.format(conversion))
 
     def nl(self, format_string=''):
-        return '\n' + self._indent + self.format(format_string)
+        return '\n{0}{1}'.format(self._indent, self.format(format_string))
 
 NL_BYTE_RATE = 0
 NL_BIT_RATE = 1
 
 class Rate(object):
     def __init__(self, rate, mode=NL_BYTE_RATE):
-        self._rate = rate
+        self._rate = int(rate)
         self._mode = mode
 
     def __str__(self):
-        return capi.nl_rate2str(self._rate, self._mode, 32)[1]
+        return str(capi.nl_rate2str(self._rate, self._mode, 32)[1])
 
     def __int__(self):
         return self._rate
@@ -162,10 +162,10 @@ class Rate(object):
 
 class Size(object):
     def __init__(self, size):
-        self._size = size
+        self._size = int(size)
 
     def __str__(self):
-        return capi.nl_size2str(self._size, 32)[0]
+        return str(capi.nl_size2str(self._size, 32)[0])
 
     def __int__(self):
         return self._size

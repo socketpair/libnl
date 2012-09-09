@@ -92,7 +92,7 @@ NLM_F_APPEND = 0x800
 class NetlinkError(Exception):
     def __init__(self, error):
         self._error = error
-        self._msg = capi.nl_geterror(error)
+        self._msg = str(capi.nl_geterror(error))
 
     def __str__(self):
         return self._msg
@@ -103,36 +103,43 @@ class KernelError(NetlinkError):
 
 class ImmutableError(NetlinkError):
     def __init__(self, msg):
-        self._msg = msg
+        self._msg = str(msg)
 
     def __str__(self):
         return 'Immutable attribute: {0}'.format(self._msg)
 
+class CAPIError(NetlinkError):
+    def __init__(self, message):
+        self._msg = str(message)
+
 class Message(object):
     """Netlink message"""
 
-    def __init__(self, size=0):
-        if size == 0:
+    def __init__(self, size=None):
+        self._msg = None
+        if size is None:
             self._msg = capi.nlmsg_alloc()
         else:
-            self._msg = capi.nlmsg_alloc_size(size)
+            self._msg = capi.nlmsg_alloc_size(int(size))
 
         if self._msg is None:
-            raise Exception('Message allocation returned NULL')
+            raise CAPIError('Message allocation returned NULL')
 
     def __del__(self):
-        capi.nlmsg_free(self._msg)
+        if self._msg is not None:
+            capi.nlmsg_free(self._msg)
 
     def __len__(self):
         return capi.nlmsg_len(nlmsg_hdr(self._msg))
 
     @property
     def protocol(self):
+        """ Return protocol as integer value"""
         return capi.nlmsg_get_proto(self._msg)
 
     @protocol.setter
     def protocol(self, value):
-        capi.nlmsg_set_proto(self._msg, value)
+        capi.nlmsg_set_proto(self._msg, int(value))
 
     @property
     def maxSize(self):
@@ -150,13 +157,11 @@ class Message(object):
     def attrs(self):
         return capi.nlmsg_attrdata(self._msg)
 
-    def send(self, sock):
-        sock.send(self)
-
 class Socket(object):
     """Netlink socket"""
 
     def __init__(self, cb=None):
+        self._sock = None
         if cb is None:
             self._sock = capi.nl_socket_alloc()
         else:
@@ -166,9 +171,10 @@ class Socket(object):
             raise Exception('NULL pointer returned while allocating socket')
 
     def __del__(self):
-        capi.nl_socket_free(self._sock)
+        if self._sock is not None:
+            capi.nl_socket_free(self._sock)
 
-    def __str__(self):
+    def __repr__(self):
         return 'nlsock<{0}>'.format(self.localPort)
 
     @property
@@ -193,37 +199,43 @@ class Socket(object):
 
     @peer_groups.setter
     def peer_groups(self, value):
-        capi.nl_socket_set_peer_groups(self._sock, value)
+        capi.nl_socket_set_peer_groups(self._sock, int(value))
 
     def set_bufsize(self, rx, tx):
-        capi.nl_socket_set_buffer_size(self._sock, rx, tx)
+        capi.nl_socket_set_buffer_size(self._sock, int(rx), int(tx))
 
     def connect(self, proto):
-        capi.nl_connect(self._sock, proto)
-        return self
+        capi.nl_connect(self._sock, int(proto))
 
     def disconnect(self):
         capi.nl_close(self._sock)
 
     def sendto(self, buf):
+        buf = bytes(buf)
         ret = capi.nl_sendto(self._sock, buf, len(buf))
         if ret < 0:
-            raise Exception('Failed to send')
-        else:
-            return ret
+            raise CAPIError('Failed to send (retval {0})'.format(ret))
+        return ret
+
+    def send(self, message):
+        ret = capi.nl_send(self._sock, message._msg)
+        if ret < 0:
+            raise CAPIError('Failed to send (retval {0})'.format(ret))
+        return ret
 
 class DumpParams(object):
     """Dumping parameters"""
 
     def __init__(self, type_=NL_DUMP_LINE):
         self._dp = capi.alloc_dump_params()
-        if not self._dp:
-            raise Exception('Unable to allocate struct nl_dump_params')
+        if self._dp is None:
+            raise CAPIError('Unable to allocate struct nl_dump_params')
 
         self._dp.dp_type = type_
 
     def __del__(self):
-        capi.free_dump_params(self._dp)
+        if self._dp is not None:
+            capi.free_dump_params(self._dp)
 
     @property
     def type(self):
@@ -231,7 +243,7 @@ class DumpParams(object):
 
     @type.setter
     def type(self, value):
-        self._dp.dp_type = value
+        self._dp.dp_type = int(value)
 
     @property
     def prefix(self):
@@ -239,47 +251,59 @@ class DumpParams(object):
 
     @prefix.setter
     def prefix(self, value):
-        self._dp.dp_prefix = value
+        self._dp.dp_prefix = int(value)
 
-# underscore this to make sure it is deleted first upon module deletion
-_defaultDumpParams = DumpParams(NL_DUMP_LINE)
+
 
 class Object(object):
     """Cacheable object (base class)"""
 
+    _defaultDumpParams = DumpParams(NL_DUMP_LINE)
+
     def __init__(self, obj_name, name, obj=None):
-        self._obj_name = obj_name
+        self._nl_object = None
+
+        if self.__class__ is Object:
+            raise NotImplementedError('Object is abstract class')
+
+        self._obj_name = bytes(obj_name)
+        if obj is None:
+            self._nl_object = capi.object_alloc_name(self._obj_name)
+            if self._nl_object is None:
+                raise CAPIError('Can not allocate object')
+        else:
+            self._nl_object = obj
         self._name = name
         self._modules = []
-
-        if not obj:
-            obj = capi.object_alloc_name(self._obj_name)
-
-        self._nl_object = obj
 
         # Create a clone which stores the original state to notice
         # modifications
         clone_obj = capi.nl_object_clone(self._nl_object)
+        if clone_obj is None:
+            raise CAPIError('Can not clone netlink object')
         self._orig = self._obj2type(clone_obj)
 
     def __del__(self):
-        if not self._nl_object:
-            raise ValueError()
+        if self._nl_object is not None:
+            capi.nl_object_put(self._nl_object)
 
-        capi.nl_object_put(self._nl_object)
+    @staticmethod
+    def _obj2type(self, obj):
+        raise NotImplementedError()
 
     def __str__(self):
         if hasattr(self, 'format'):
             return self.format()
-        else:
-            return capi.nl_object_dump_buf(self._nl_object, 4096).rstrip()
+        return str(capi.nl_object_dump_buf(self._nl_object, 4096)).rstrip()
 
     def _new_instance(self):
         raise NotImplementedError()
 
     def clone(self):
-        """Clone object"""
-        return self._new_instance(capi.nl_object_clone(self._nl_object))
+        clone_obj = capi.nl_object_clone(self._nl_object)
+        if clone_obj is None:
+            raise CAPIError('Can not clone netlink object')
+        return self._new_instance(clone_obj)
 
     def _module_lookup(self, path, constructor=None):
         """Lookup object specific module and load it
@@ -312,18 +336,18 @@ class Object(object):
             self._modules.append(ret)
 
     def _module_brief(self):
-        ret = ''
+        ret = []
 
         for module in self._modules:
             if hasattr(module, 'brief'):
-                ret += module.brief()
+                ret.append(module.brief())
 
-        return ret
+        return ''.join(ret)
 
     def dump(self, params=None):
         """Dump object as human readable text"""
         if params is None:
-            params = _defaultDumpParams
+            params = self._defaultDumpParams
 
         capi.nl_object_dump(self._nl_object, params._dp)
 
@@ -341,38 +365,21 @@ class Object(object):
 
     @property
     def shared(self):
-        return capi.nl_object_shared(self._nl_object) != 0
+        return bool(capi.nl_object_shared(self._nl_object))
 
     @property
     def attrs(self):
         attr_list = capi.nl_object_attr_list(self._nl_object, 1024)
-        return attr_list[0].split()
+        return str(attr_list[0]).split()
 
     @property
     def refcnt(self):
         return capi.nl_object_get_refcnt(self._nl_object)
 
-    # this method resolves multiple levels of sub types to allow
-    # accessing properties of subclass/subtypes (e.g. link.vlan.id)
-    def _resolve(self, attr):
-        obj = self
-        l = attr.split('.')
-        while len(l) > 1:
-            obj = getattr(obj, l.pop(0))
-        return (obj, l.pop(0))
-
-    def _setattr(self, attr, val):
-        obj, attr = self._resolve(attr)
-        return setattr(obj, attr, val)
-
-    def _hasattr(self, attr):
-        obj, attr = self._resolve(attr)
-        return hasattr(obj, attr)
-
 class ObjIterator(object):
     def __init__(self, cache, obj):
-        self._cache = cache
         self._nl_object = None
+        self._cache = cache
 
         if not obj:
             self._end = 1
@@ -383,7 +390,7 @@ class ObjIterator(object):
             self._end = 0
 
     def __del__(self):
-        if self._nl_object:
+        if self._nl_object is not None:
             capi.nl_object_put(self._nl_object)
 
     def __iter__(self):
@@ -429,6 +436,7 @@ class Cache(object):
     object_type = None # undefined, should be the type of cached objects
 
     def __init__(self):
+        self._nl_cache = None
         if self.__class__ is Cache:
             raise NotImplementedError()
         self._nl_cache = self._alloc_cache_name(self._cache_name)
@@ -436,7 +444,8 @@ class Cache(object):
         self.arg2 = None
 
     def __del__(self):
-        capi.nl_cache_free(self._nl_cache)
+        if self._nl_cache is not None:
+            capi.nl_cache_free(self._nl_cache)
 
     def __len__(self):
         return capi.nl_cache_nitems(self._nl_cache)
@@ -453,14 +462,16 @@ class Cache(object):
         obj = capi.nl_cache_search(self._nl_cache, item._nl_object)
         if obj is None:
             return False
-        else:
-            capi.nl_object_put(obj)
-            return True
+        capi.nl_object_put(obj)
+        return True
 
     # called by sub classes to allocate type specific caches by name
     @staticmethod
     def _alloc_cache_name(name):
-        return capi.alloc_cache_name(name)
+        cache = capi.alloc_cache_name(bytes(name))
+        if cache is None:
+            raise CAPIError('Can not allocate cache by name {0}'.format(name))
+        return cache
 
     # implemented by sub classes, must return instance of sub class
     def _new_cache(self, cache):
@@ -472,16 +483,13 @@ class Cache(object):
         Cretes a new cache containing all objects which match the
         specified filter.
         """
-        if not filter_:
-            raise ValueError()
-
         c = capi.nl_cache_subset(self._nl_cache, filter_._nl_object)
         return self._new_cache(cache=c)
 
     def dump(self, params=None, filter_=None):
         """Dump (print) cache as human readable text"""
         if not params:
-            params = _defaultDumpParams
+            params = Object._defaultDumpParams
 
         if filter_:
             filter_ = filter_._nl_object
@@ -534,25 +542,25 @@ class Cache(object):
 # Cache Manager (Work in Progress)
 NL_AUTO_PROVIDE = 1
 class CacheManager(object):
-    def __init__(self, protocol, flags=None):
-
+    def __init__(self, protocol, flags=NL_AUTO_PROVIDE):
+        self._sock = None
+        self._mngr = None
         self._sock = Socket()
-        self._sock.connect(protocol)
-
-        if not flags:
-            flags = NL_AUTO_PROVIDE
-
-        self._mngr = capi.cache_mngr_alloc(self._sock._sock, protocol, flags)
+        self._sock.connect(int(protocol))
+        self._mngr = capi.cache_mngr_alloc(self._sock._sock, int(protocol), int(flags))
+        if self._mngr is None:
+            raise CAPIError('Can not allocate cache manager')
 
     def __del__(self):
-        if self._sock:
-            self._sock.disconnect()
-
-        if self._mngr:
+        if self._mngr is not None:
             capi.nl_cache_mngr_free(self._mngr)
 
+        if self._sock is not None:
+            self._sock.disconnect()
+
+
     def add(self, name):
-        capi.cache_mngr_add(self._mngr, name, None, None)
+        capi.cache_mngr_add(self._mngr, bytes(name), None, None)
 
 class AddressFamily(object):
     """Address family representation
@@ -567,20 +575,21 @@ class AddressFamily(object):
     print repr(af)  # => AddressFamily('inet6')
     """
     def __init__(self, family=socket.AF_UNSPEC):
-        if isinstance(family, str):
-            family = capi.nl_str2af(family)
-            if family < 0:
-                raise ValueError('Unknown family name')
-        elif not isinstance(family, int):
-            raise TypeError()
-
-        self._family = family
+        if isinstance(family, basestring):
+            self._family = capi.nl_str2af(bytes(family))
+            if self._family < 0:
+                raise ValueError('Unknown family name {0}'.format(family)
+        else:
+            self._family = int(family)
 
     def __str__(self):
-        return capi.nl_af2str(self._family, 32)[0]
+        return str(capi.nl_af2str(self._family, 32)[0])
 
     def __int__(self):
         return self._family
+
+    def __cmp__(self, other):
+        return self._family - other._family
 
     def __repr__(self):
         return 'AddressFamily({0!r})'.format(str(self))
@@ -604,95 +613,68 @@ class AbstractAddress(object):
     def __init__(self, addr):
         self._nl_addr = None
 
-        if isinstance(addr, str):
-            addr = capi.addr_parse(addr, socket.AF_UNSPEC)
-            if addr is None:
-                raise ValueError('Invalid address format')
-        elif addr:
-            capi.nl_addr_get(addr)
-
-        self._nl_addr = addr
+        if isinstance(addr, basestring):
+            addr_ = capi.addr_parse(addr, socket.AF_UNSPEC)
+            if addr_ is None:
+                raise ValueError('Invalid address {0!r}'.format(addr))
+            addr = addr_
+        self._nl_addr = capi.nl_addr_get(addr)
 
     def __del__(self):
-        if self._nl_addr:
+        if self._nl_addr is not None:
             capi.nl_addr_put(self._nl_addr)
 
     def __cmp__(self, other):
-        if isinstance(other, str):
+        if isinstance(other, basestring):
             other = AbstractAddress(other)
 
         diff = self.prefixlen - other.prefixlen
-        if diff == 0:
-            diff = capi.nl_addr_cmp(self._nl_addr, other._nl_addr)
-
-        return diff
-
-    def contains(self, item):
-        diff = int(self.family) - int(item.family)
         if diff:
+            return diff
+        return capi.nl_addr_cmp(self._nl_addr, other._nl_addr)
+
+    def __contains__(self, item):
+        if isinstance(item, basestring):
+            item = AbstractAddress(item)
+
+        if item.family != self.family:
             return False
 
         if item.prefixlen < self.prefixlen:
             return False
 
-        diff = capi.nl_addr_cmp_prefix(self._nl_addr, item._nl_addr)
-        return diff == 0
+        return not bool(capi.nl_addr_cmp_prefix(self._nl_addr, item._nl_addr))
 
     def __nonzero__(self):
-        if self._nl_addr:
-            return not capi.nl_addr_iszero(self._nl_addr)
-        else:
-            return False
+        return not bool(capi.nl_addr_iszero(self._nl_addr))
 
     def __len__(self):
-        if self._nl_addr:
-            return capi.nl_addr_get_len(self._nl_addr)
-        else:
-            return 0
+        return capi.nl_addr_get_len(self._nl_addr)
 
     def __str__(self):
-        if self._nl_addr:
-            return capi.nl_addr2str(self._nl_addr, 64)[0]
-        else:
-            return 'none'
+        return str(capi.nl_addr2str(self._nl_addr, 64)[0])
 
     @property
     def shared(self):
         """True if address is shared (multiple users)"""
-        if self._nl_addr:
-            return capi.nl_addr_shared(self._nl_addr) != 0
-        else:
-            return False
+        return bool(capi.nl_addr_shared(self._nl_addr))
 
     @property
     def prefixlen(self):
         """Length of prefix (number of bits)"""
-        if self._nl_addr:
-            return capi.nl_addr_get_prefixlen(self._nl_addr)
-        else:
-            return 0
+        return capi.nl_addr_get_prefixlen(self._nl_addr)
 
     @prefixlen.setter
     def prefixlen(self, value):
-        if not self._nl_addr:
-            raise TypeError()
-
         capi.nl_addr_set_prefixlen(self._nl_addr, int(value))
 
     @property
     def family(self):
         """Address family"""
-        f = 0
-        if self._nl_addr:
-            f = capi.nl_addr_get_family(self._nl_addr)
-
-        return AddressFamily(f)
+        return AddressFamily(capi.nl_addr_get_family(self._nl_addr))
 
     @family.setter
     def family(self, value):
-        if not self._nl_addr:
-            raise TypeError()
-
         if not isinstance(value, AddressFamily):
             value = AddressFamily(value)
 

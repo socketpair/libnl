@@ -54,8 +54,8 @@ class Handle(object):
     print str(handle)
     """
     def __init__(self, val=None):
-        if type(val) is str:
-            val = capi.tc_str2handle(val)
+        if isinstance(val, basestring):
+            val = capi.tc_str2handle(bytes(val))
         elif not val:
             val = 0
 
@@ -67,19 +67,20 @@ class Handle(object):
 
         if isinstance(other, Handle):
             return int(self) - int(other)
-        elif isinstance(other, int):
+
+        if isinstance(other, int):
             return int(self) - other
-        else:
-            raise TypeError()
+
+        raise TypeError()
 
     def __int__(self):
         return self._val
 
     def __str__(self):
-        return capi.rtnl_tc_handle2str(self._val, 64)[0]
+        return str(capi.rtnl_tc_handle2str(self._val, 64)[0])
 
     def isroot(self):
-        return self._val == TC_H_ROOT or self._val == TC_H_INGRESS
+        return self._val in (TC_H_ROOT, TC_H_INGRESS)
 
 class TcCache(netlink.Cache):
     """Cache of traffic control object"""

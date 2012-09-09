@@ -199,11 +199,11 @@ class Link(netlink.Object):
 
     @flags.setter
     def flags(self, value):
-        if not (type(value) is str):
+        if not isinstance(value, basestring):
             for flag in value:
                 self._set_flag(flag)
         else:
-            self._set_flag(value)
+            self._set_flag(bytes(value))
 
     @property
     @netlink.nlattr(type=int, fmt=util.num)
@@ -328,8 +328,8 @@ class Link(netlink.Object):
 
     def get_stat(self, stat):
         """Retrieve statistical information"""
-        if type(stat) is str:
-            stat = capi.rtnl_link_str2stat(stat)
+        if isinstance(stat, basestring):
+            stat = capi.rtnl_link_str2stat(bytes(stat))
             if stat < 0:
                 raise NameError('unknown name of statistic')
 
@@ -480,10 +480,10 @@ class LinkCache(netlink.Cache):
         self._set_arg1(family)
 
     def __getitem__(self, key):
-        if type(key) is int:
+        if not isinstance(key, basestring):
             link = capi.rtnl_link_get(self._nl_cache, key)
         else:
-            link = capi.rtnl_link_get_by_name(self._nl_cache, key)
+            link = capi.rtnl_link_get_by_name(self._nl_cache, bytes(key))
 
         if link is None:
             raise KeyError()

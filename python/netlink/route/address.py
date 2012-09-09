@@ -78,9 +78,9 @@ class Address(netlink.Object):
 
     @link.setter
     def link(self, value):
-        if type(value) is str:
+        if isinstance(value, basestring):
             try:
-                value = Link.resolve(value)
+                value = Link.resolve(bytes(value))
             except KeyError:
                 raise ValueError()
 
@@ -159,8 +159,8 @@ class Address(netlink.Object):
 
     @scope.setter
     def scope(self, value):
-        if type(value) is str:
-            value = capi.rtnl_str2scope(value)
+        if isinstance(value, basestring):
+            value = capi.rtnl_str2scope(bytes(value))
         capi.rtnl_addr_set_scope(self._rtnl_addr, value)
 
     @property
@@ -340,8 +340,8 @@ class AddressCache(netlink.Cache):
         return self.lookup(0, key)
 
     def lookup(self, ifindex, local):
-        if type(local) is str:
-            local = netlink.AbstractAddress(local)
+        if isinstance(local, basestring):
+            local = netlink.AbstractAddress(bytes(local))
 
         addr = capi.rtnl_addr_get(self._nl_cache, ifindex,
                       local._nl_addr)

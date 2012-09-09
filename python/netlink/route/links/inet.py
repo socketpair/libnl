@@ -42,36 +42,40 @@ DEVCONF_SRC_VMARK = 24
 DEVCONF_PROXY_ARP_PVLAN = 25
 DEVCONF_MAX = DEVCONF_PROXY_ARP_PVLAN
 
-def _resolve(id):
-    if type(id) is str:
-        id = capi.rtnl_link_inet_str2devconf(id)[0]
-        if id < 0:
-            raise NameError('unknown configuration id')
-    return id
 
 class InetLink(object):
     def __init__(self, link):
         self._link = link
 
+    @staticmethod
+    def _resolve_ident(ident):
+        if not isinstance(ident, basestring):
+            return int(ident)
+
+        ret = capi.rtnl_link_inet_str2devconf(bytes(ident))[0]
+        if ret < 0:
+            raise NameError('unknown configuration id {0}'.format(ident))
+        return ret
+
     def details(self, fmt):
-        buf = fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
-
-        for i in range(DEVCONF_FORWARDING, DEVCONF_MAX+1):
+        buf = [
+            fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
+        ]
+        for i in xrange(DEVCONF_FORWARDING, DEVCONF_MAX+1):
             if i & 1 and i > 1:
-                buf += fmt.nl('\t')
-            txt = util.kw(capi.rtnl_link_inet_devconf2str(i, 32)[0])
-            buf += fmt.format('{0:28s} {1:12}  ', txt,
-                      self.get_conf(i))
+                buf.append(fmt.nl('\t'))
+            txt = util.kw(str(capi.rtnl_link_inet_devconf2str(i, 32)[0]))
+            buf.append(fmt.format('{0:28s} {1:12}  ', txt, self.get_conf(i)))
 
+        return ''.join(buf)
 
-        return buf
+    def get_conf(self, ident):
+        ident = self._resolve_ident(ident)
+        return capi.rtnl_link_inet_get_conf(self._link._rtnl_link, ident)
 
-    def get_conf(self, id):
-        return capi.inet_get_conf(self._link._rtnl_link, _resolve(id))
-
-    def set_conf(self, id, value):
-        return capi.rtnl_link_inet_set_conf(self._link._rtnl_link,
-                        _resolve(id), int(value))
+    def set_conf(self, ident, value):
+        ident = self._resolve_ident(ident)
+        return capi.rtnl_link_inet_set_conf(self._link._rtnl_link, ident, int(value))
 
     @property
     @netlink.nlattr(type=bool, fmt=util.boolean)
