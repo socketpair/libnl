@@ -876,35 +876,35 @@ prefix:
  */
 
 static const struct trans_tbl afs[] = {
-	__ADD(AF_UNSPEC,unspec)
-	__ADD(AF_UNIX,unix)
-	__ADD(AF_LOCAL,local)
-	__ADD(AF_INET,inet)
-	__ADD(AF_AX25,ax25)
-	__ADD(AF_IPX,ipx)
-	__ADD(AF_APPLETALK,appletalk)
-	__ADD(AF_NETROM,netrom)
-	__ADD(AF_BRIDGE,bridge)
-	__ADD(AF_ATMPVC,atmpvc)
-	__ADD(AF_X25,x25)
-	__ADD(AF_INET6,inet6)
-	__ADD(AF_ROSE,rose)
-	__ADD(AF_DECnet,decnet)
-	__ADD(AF_NETBEUI,netbeui)
-	__ADD(AF_SECURITY,security)
-	__ADD(AF_KEY,key)
-	__ADD(AF_NETLINK,netlink)
-	__ADD(AF_ROUTE,route)
-	__ADD(AF_PACKET,packet)
-	__ADD(AF_ASH,ash)
-	__ADD(AF_ECONET,econet)
-	__ADD(AF_ATMSVC,atmsvc)
-	__ADD(AF_SNA,sna)
-	__ADD(AF_IRDA,irda)
-	__ADD(AF_PPPOX,pppox)
-	__ADD(AF_WANPIPE,wanpipe)
-	__ADD(AF_LLC,llc)
-	__ADD(AF_BLUETOOTH,bluetooth)
+	__ADD(AF_UNSPEC,unspec),
+	__ADD(AF_UNIX,unix),
+	__ADD(AF_LOCAL,local),
+	__ADD(AF_INET,inet),
+	__ADD(AF_AX25,ax25),
+	__ADD(AF_IPX,ipx),
+	__ADD(AF_APPLETALK,appletalk),
+	__ADD(AF_NETROM,netrom),
+	__ADD(AF_BRIDGE,bridge),
+	__ADD(AF_ATMPVC,atmpvc),
+	__ADD(AF_X25,x25),
+	__ADD(AF_INET6,inet6),
+	__ADD(AF_ROSE,rose),
+	__ADD(AF_DECnet,decnet),
+	__ADD(AF_NETBEUI,netbeui),
+	__ADD(AF_SECURITY,security),
+	__ADD(AF_KEY,key),
+	__ADD(AF_NETLINK,netlink),
+	__ADD(AF_ROUTE,route),
+	__ADD(AF_PACKET,packet),
+	__ADD(AF_ASH,ash),
+	__ADD(AF_ECONET,econet),
+	__ADD(AF_ATMSVC,atmsvc),
+	__ADD(AF_SNA,sna),
+	__ADD(AF_IRDA,irda),
+	__ADD(AF_PPPOX,pppox),
+	__ADD(AF_WANPIPE,wanpipe),
+	__ADD(AF_LLC,llc),
+	__ADD(AF_BLUETOOTH,bluetooth),
 };
 
 char *nl_af2str(int family, char *buf, size_t size)
