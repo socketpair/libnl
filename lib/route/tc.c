@@ -928,9 +928,10 @@ struct rtnl_tc_ops *rtnl_tc_lookup_ops(enum rtnl_tc_type type, const char *kind)
 {
 	struct rtnl_tc_ops *ops;
 
-	nl_list_for_each_entry(ops, &tc_ops_list[type], to_list)
+	nl_list_for_each_entry(ops, &tc_ops_list[type], to_list) {
 		if (!strcmp(kind, ops->to_kind))
 			return ops;
+        }
 
 	return NULL;
 }

@@ -320,8 +320,9 @@ struct nl_cache *nl_cache_clone(struct nl_cache *cache)
 	if (!clone)
 		return NULL;
 
-	nl_list_for_each_entry(obj, &cache->c_items, ce_list)
+	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
 		nl_cache_add(clone, obj);
+        }
 
 	return clone;
 }
@@ -343,8 +344,9 @@ void nl_cache_clear(struct nl_cache *cache)
 
 	NL_DBG(1, "Clearing cache %p <%s>...\n", cache, nl_cache_name(cache));
 
-	nl_list_for_each_entry_safe(obj, tmp, &cache->c_items, ce_list)
+	nl_list_for_each_entry_safe(obj, tmp, &cache->c_items, ce_list) {
 		nl_cache_remove(obj);
+        }
 }
 
 /**
@@ -876,8 +878,9 @@ void nl_cache_mark_all(struct nl_cache *cache)
 	NL_DBG(2, "Marking all objects in cache %p <%s>...\n",
 	          cache, nl_cache_name(cache));
 
-	nl_list_for_each_entry(obj, &cache->c_items, ce_list)
+	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
 		nl_object_mark(obj);
+        }
 }
 
 /** @} */

@@ -265,8 +265,9 @@ static void clear_hashtable(void)
 	for (i = 0; i < CLASSID_NAME_HT_SIZ; i++) {
 		struct classid_map *map, *n;
 
-		nl_list_for_each_entry_safe(map, n, &tbl_name[i], name_list)
+		nl_list_for_each_entry_safe(map, n, &tbl_name[i], name_list) {
 			classid_map_free(map);
+                }
 
 		nl_init_list_head(&tbl_name[i]);
 

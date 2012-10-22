@@ -115,8 +115,9 @@ static int read_pktlocs(void)
 	for (i = 0; i < PKTLOC_NAME_HT_SIZ; i++) {
 		struct rtnl_pktloc *loc, *n;
 
-		nl_list_for_each_entry_safe(loc, n, &pktloc_name_ht[i], list)
+		nl_list_for_each_entry_safe(loc, n, &pktloc_name_ht[i], list) {
 			rtnl_pktloc_put(loc);
+                }
 
 		nl_init_list_head(&pktloc_name_ht[i]);
 	}
@@ -242,9 +243,11 @@ void rtnl_pktloc_foreach(void (*cb)(struct rtnl_pktloc *, void *), void *arg)
 	/* ignore errors */
 	read_pktlocs();
 
-	for (i = 0; i < PKTLOC_NAME_HT_SIZ; i++)
-		nl_list_for_each_entry(loc, &pktloc_name_ht[i], list)
+	for (i = 0; i < PKTLOC_NAME_HT_SIZ; i++) {
+		nl_list_for_each_entry(loc, &pktloc_name_ht[i], list) {
 			cb(loc, arg);
+                }
+        }
 }
 
 static int __init pktloc_init(void)

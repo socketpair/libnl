@@ -51,9 +51,10 @@ static struct rtnl_link_info_ops *__rtnl_link_info_ops_lookup(const char *name)
 {
 	struct rtnl_link_info_ops *ops;
 
-	nl_list_for_each_entry(ops, &info_ops, io_list)
+	nl_list_for_each_entry(ops, &info_ops, io_list) {
 		if (!strcmp(ops->io_name, name))
 			return ops;
+        }
 
 	return NULL;
 }

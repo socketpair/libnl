@@ -66,9 +66,10 @@ struct rtnl_ematch_ops *rtnl_ematch_lookup_ops(int kind)
 {
 	struct rtnl_ematch_ops *ops;
 
-	nl_list_for_each_entry(ops, &ematch_ops_list, eo_list)
+	nl_list_for_each_entry(ops, &ematch_ops_list, eo_list) {
 		if (ops->eo_kind == kind)
 			return ops;
+        }
 
 	return NULL;
 }
@@ -85,9 +86,10 @@ struct rtnl_ematch_ops *rtnl_ematch_lookup_ops_by_name(const char *name)
 {
 	struct rtnl_ematch_ops *ops;
 
-	nl_list_for_each_entry(ops, &ematch_ops_list, eo_list)
+	nl_list_for_each_entry(ops, &ematch_ops_list, eo_list) {
 		if (!strcasecmp(ops->eo_name, name))
 			return ops;
+        }
 
 	return NULL;
 }
@@ -521,8 +523,9 @@ static int update_container_index(struct nl_list_head *list, int *index)
 {
 	struct rtnl_ematch *e;
 
-	nl_list_for_each_entry(e, list, e_list)
+	nl_list_for_each_entry(e, list, e_list) {
 		e->e_index = (*index)++;
+        }
 
 	nl_list_for_each_entry(e, list, e_list) {
 		if (e->e_kind == TCF_EM_CONTAINER) {
