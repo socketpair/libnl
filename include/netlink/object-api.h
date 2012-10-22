@@ -28,7 +28,7 @@ extern "C" {
  * @code
  * // Define your object starting with the common object header
  * struct my_obj {
- * 	NLHDR_COMMON
+ * 	NLHDR_COMMON;
  * 	int		my_data;
  * };
  *
@@ -51,7 +51,7 @@ extern "C" {
  * // You may require to allocate additional data and store it inside
  * // object, f.e. assuming there is a field `ptr'.
  * struct my_obj {
- * 	NLHDR_COMMON
+ * 	NLHDR_COMMON;
  * 	void *		ptr;
  * };
  *
@@ -192,7 +192,7 @@ extern "C" {
 
 struct nl_object
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 };
 
 

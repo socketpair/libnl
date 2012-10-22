@@ -96,7 +96,7 @@ int nl_object_alloc_name(const char *kind, struct nl_object **result)
 }
 
 struct nl_derived_object {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 	char data;
 };
 

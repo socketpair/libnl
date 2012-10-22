@@ -145,7 +145,7 @@ struct rtnl_link_map
 
 struct rtnl_link
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	char				l_name[IFNAMSIZ];
 	uint32_t			l_family;
@@ -190,7 +190,7 @@ struct rtnl_ncacheinfo
 
 struct rtnl_neigh
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 	uint32_t	n_family;
 	uint32_t	n_ifindex;
 	uint16_t	n_state;
@@ -222,7 +222,7 @@ struct rtnl_addr_cacheinfo
 
 struct rtnl_addr
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint8_t		a_family;
 	uint8_t		a_prefixlen;
@@ -258,7 +258,7 @@ struct rtnl_nexthop
 
 struct rtnl_route
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint8_t			rt_family;
 	uint8_t			rt_dst_len;
@@ -285,7 +285,7 @@ struct rtnl_route
 
 struct rtnl_rule
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 	uint8_t		r_family;
 	uint8_t		r_action;
 	uint8_t		r_dsfield; /* ipv4 only */
@@ -404,7 +404,7 @@ struct rtnl_neightbl_parms
  */
 struct rtnl_neightbl
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	char			nt_name[NTBLNAMSIZ];
 	uint32_t		nt_family;
@@ -683,7 +683,7 @@ struct rtnl_plug
 
 struct flnl_request
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	struct nl_addr *	lr_addr;
 	uint32_t		lr_fwmark;
@@ -695,7 +695,7 @@ struct flnl_request
 
 struct flnl_result
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	struct flnl_request *	fr_req;
 	uint8_t			fr_table_id;
@@ -727,7 +727,7 @@ struct genl_family_grp {
 
 struct genl_family
 {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint16_t		gf_id;
 	char 			gf_name[GENL_NAMSIZ];
@@ -767,7 +767,7 @@ union nfnl_ct_protoinfo {
 };
 
 struct nfnl_ct {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint8_t			ct_family;
 	uint8_t			ct_proto;
@@ -785,7 +785,7 @@ struct nfnl_ct {
 };
 
 struct nfnl_log {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint16_t		log_group;
 	uint8_t			log_copy_mode;
@@ -798,7 +798,7 @@ struct nfnl_log {
 };
 
 struct nfnl_log_msg {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint8_t			log_msg_family;
 	uint8_t			log_msg_hook;
@@ -821,7 +821,7 @@ struct nfnl_log_msg {
 };
 
 struct nfnl_queue {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint16_t		queue_group;
 	uint32_t		queue_maxlen;
@@ -830,7 +830,7 @@ struct nfnl_queue {
 };
 
 struct nfnl_queue_msg {
-	NLHDR_COMMON
+	NLHDR_COMMON;
 
 	uint16_t		queue_msg_group;
 	uint8_t			queue_msg_family;
