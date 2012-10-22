@@ -327,9 +327,10 @@ struct nlattr *nla_find(struct nlattr *head, int len, int attrtype)
 	struct nlattr *nla;
 	int rem;
 
-	nla_for_each_attr(nla, head, len, rem)
+	nla_for_each_attr(nla, head, len, rem) {
 		if (nla_type(nla) == attrtype)
 			return nla;
+        }
 
 	return NULL;
 }
