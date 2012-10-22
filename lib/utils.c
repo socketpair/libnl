@@ -649,7 +649,7 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_FDDI,fddi),
 	__ADD(ARPHRD_BIF,bif),
 	__ADD(ARPHRD_SIT,sit),
-	__ADD(ARPHRD_IPDDP,ip/ddp),
+	__ADD(ARPHRD_IPDDP,ip_ddp),
 	__ADD(ARPHRD_IPGRE,gre),
 	__ADD(ARPHRD_PIMREG,pimreg),
 	__ADD(ARPHRD_HIPPI,hippi),
@@ -673,11 +673,11 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_FCFABRIC+11,fcfb_11),
 	__ADD(ARPHRD_FCFABRIC+12,fcfb_12),
 	__ADD(ARPHRD_IEEE802_TR,tr),
-	__ADD(ARPHRD_IEEE80211,ieee802.11),
+	__ADD(ARPHRD_IEEE80211,ieee802_11),
 	__ADD(ARPHRD_PHONET,phonet),
 	__ADD(ARPHRD_CAIF, caif),
 #ifdef ARPHRD_IEEE80211_PRISM
-	__ADD(ARPHRD_IEEE80211_PRISM, ieee802.11_prism),
+	__ADD(ARPHRD_IEEE80211_PRISM, ieee802_11_prism),
 #endif
 #ifdef ARPHRD_VOID
 	__ADD(ARPHRD_VOID,void),
@@ -728,7 +728,7 @@ static const struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_ATALK,atalk),
 	__ADD(ETH_P_AARP,aarp),
 #ifdef ETH_P_8021Q
-	__ADD(ETH_P_8021Q,802.1q),
+	__ADD(ETH_P_8021Q,802_1q),
 #endif
 	__ADD(ETH_P_IPX,ipx),
 	__ADD(ETH_P_IPV6,ipv6),
@@ -752,10 +752,10 @@ static const struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_FIP,fip),
 	__ADD(ETH_P_EDSA,edsa),
 	__ADD(ETH_P_EDP2,edp2),
-	__ADD(ETH_P_802_3,802.3),
+	__ADD(ETH_P_802_3,802_3),
 	__ADD(ETH_P_AX25,ax25),
 	__ADD(ETH_P_ALL,all),
-	__ADD(ETH_P_802_2,802.2),
+	__ADD(ETH_P_802_2,802_2),
 	__ADD(ETH_P_SNAP,snap),
 	__ADD(ETH_P_DDCMP,ddcmp),
 	__ADD(ETH_P_WAN_PPP,wan_ppp),
@@ -763,7 +763,7 @@ static const struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_LOCALTALK,localtalk),
 	__ADD(ETH_P_CAN,can),
 	__ADD(ETH_P_PPPTALK,ppptalk),
-	__ADD(ETH_P_TR_802_2,tr_802.2),
+	__ADD(ETH_P_TR_802_2,tr_802_2),
 	__ADD(ETH_P_MOBITEX,mobitex),
 	__ADD(ETH_P_CONTROL,control),
 	__ADD(ETH_P_IRDA,irda),
