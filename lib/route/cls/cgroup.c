@@ -66,11 +66,11 @@ static int cgroup_msg_parser(struct rtnl_tc *tc, void *data)
 		c->cg_mask |= CGROUP_ATTR_EMATCH;
 	}
 
-#if 0
+	/*
 	TODO:
 	TCA_CGROUP_ACT,
 	TCA_CGROUP_POLICE,
-#endif
+	*/
 
 	return 0;
 }
